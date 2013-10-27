@@ -31,11 +31,12 @@ function createExtensionsFile (opts, info, cb) {
  exports.createCertRequestConfig =
 function createCertRequestConfig (opts, info, cb) {
   var hash = info.subject;
-  var s = "[ req ]\ndefault_bits           = 2048\n" +
-    "default_keyfile        = keyfile.pem\n" +
-    "distinguished_name     = req_distinguished_name\n" +
-    "prompt                 = no\n\n" +
-    "[ req_distinguished_name ]\n";
+  var s = '[ req ]\n' +
+          'default_bits       = 2048\n' +
+          'default_keyfile    = keyfile.pem\n' +
+          'distinguished_name = req_distinguished_name\n' +
+          'prompt             = no\n\n' +
+          '[ req_distinguished_name ]\n';
 
   var allowableKeys = { C:1, ST:1, L:1, O:1, OU:1, CN:1 };
   Object.keys(hash).forEach(function (key) {
@@ -43,7 +44,7 @@ function createCertRequestConfig (opts, info, cb) {
       var val = hash[key];
       if (Array.isArray(val))
         val = val[0]; // hack to handle OUs that are arrays of strings
-      s = s + key + " = " + val + "\n";
+      s = s + key + ' = ' + val + '\n';
     }
   });
 
