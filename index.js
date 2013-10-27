@@ -4,7 +4,7 @@ var tmp = require('tmp');
 var fs = require('fs');
 var child = require('child_process');
 
-function create_extensions_file(opts, info, cb) {
+function createExtensionsFile (opts, info, cb) {
   var s = '[v3_ca]\n';
   if (info.subjectaltname) {
     s = s + 'subjectAltName = ' + info.subjectaltname + '\n';
@@ -28,7 +28,8 @@ function create_extensions_file(opts, info, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the certificate request file, if successful.
  */
-exports.create_cert_request_config = function (opts, info, cb) {
+ exports.createCertRequestConfig =
+function createCertRequestConfig (opts, info, cb) {
   var hash = info.subject;
   var s = "[ req ]\ndefault_bits           = 2048\n" +
     "default_keyfile        = keyfile.pem\n" +
@@ -46,9 +47,9 @@ exports.create_cert_request_config = function (opts, info, cb) {
     }
   });
 
-  tmp.file(opts, function tmpFileCb(err, path) {
+  tmp.file(opts, function tmpFileCb (err, path) {
     if (err) return cb(err);
-    fs.writeFile(path, s, function writeFileCb(err) {
+    fs.writeFile(path, s, function writeFileCb (err) {
       cb(err, path);
     });
   });
@@ -61,10 +62,11 @@ exports.create_cert_request_config = function (opts, info, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the created file, if successful.
  */
-exports.create_keypair = function (opts, cb) {
-  tmp.file(opts, function tmpFileCb(err, path) {
+ exports.createKeypair =
+function createKeypair (opts, cb) {
+  tmp.file(opts, function tmpFileCb (err, path) {
     if (err) return cb(err);
-    child.exec('openssl genrsa -out ' + path + ' 2048', function execCb(err) {
+    child.exec('openssl genrsa -out ' + path + ' 2048', function execCb (err) {
       cb(err, path);
     });
   });
@@ -79,13 +81,12 @@ exports.create_keypair = function (opts, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the created file, if successful.
  */
-exports.create_cert_request = function (opts, keyPath, cfgPath, cb) {
-  tmp.file(opts, function tmpFileCb(err, path) {
+ exports.createCertRequest =
+function createCertRequest (opts, keyPath, cfgPath, cb) {
+  tmp.file(opts, function tmpFileCb (err, path) {
     if (err) return cb(err);
     child.exec('openssl req -new -key ' + keyPath + ' -config ' + cfgPath + ' -out ' + path,
-               function execCb(err) {
-      cb(err, path);
-    });
+               function execCb (err) {cb(err, path)});
   });
 }
 
@@ -99,7 +100,8 @@ exports.create_cert_request = function (opts, keyPath, cfgPath, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the created file, if successful.
  */
-exports.create_cert = function (opts, reqPath, caKeyPath, caCertPath, extPath, cb) {
+ exports.createCert =
+function createCert (opts, reqPath, caKeyPath, caCertPath, extPath, cb) {
   tmp.file(opts, function tmpFileCb(err, path) {
     if (err) return cb(err);
     child.exec('openssl x509 -req -in ' + reqPath + ' -CAkey ' + caKeyPath + ' -CA ' +
@@ -126,31 +128,31 @@ exports.create_cert = function (opts, reqPath, caKeyPath, caCertPath, extPath, c
  * caCertPath: the signer's certificate
  * cb: a callback of the form cb(err, keyPath, certPath)
  */
-exports.generate_cert = function (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
-
+ exports.generateCert =
+function generateCert (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
   var tmpFiles = [];
   var opts = { prefix:prefix + '-', postfix:'.pem'}
-  exports.create_keypair(opts, function(err, keyPath) {
+  createKeypair(opts, function (err, keyPath) {
     if (err) return cb(err);
     opts.postfix = '.cfg';
-    exports.create_cert_request_config(opts, info, function (err, cfgPath) {
+    createCertRequestConfig(opts, info, function (err, cfgPath) {
       if (err) return cb(err);
       tmpFiles.push(cfgPath);
       opts.postfix = '.ext';
       opts.prefix = prefix + '-';
-      create_extensions_file(opts, info, function (err, extPath) {
+      createExtensionsFile(opts, info, function (err, extPath) {
         if (err) return cb(err);
         tmpFiles.push(extPath);
         opts.postfix = '.pem';
         opts.prefix = prefix + '-csr-';
-        exports.create_cert_request(opts, keyPath, cfgPath, function (err, reqPath) {
+        createCertRequest(opts, keyPath, cfgPath, function (err, reqPath) {
           if (err) return cb(err);
           tmpFiles.push(reqPath);
           opts.prefix = prefix + '-cert-';
-          exports.create_cert(opts, reqPath, caKeyPath, caCertPath, extPath,
+          createCert(opts, reqPath, caKeyPath, caCertPath, extPath,
                               function (err, certPath, fingerprint, hash) {
             if (!keepFiles)
-              tmpFiles.forEach( function(path) { fs.unlink(path); } );
+              tmpFiles.forEach( function (path) { fs.unlink(path); } );
             cb(err, keyPath, certPath, fingerprint, hash);
           });
         });
@@ -160,7 +162,7 @@ exports.generate_cert = function (prefix, keepFiles, info, caKeyPath, caCertPath
 }
 
 /*
- * Same as generate_cert, except that key and certificate contents are returned
+ * Same as generateCert, except that key and certificate contents are returned
  * as buffers instead of paths.
  *
  * prefix: Temporary file prefix.
@@ -172,8 +174,9 @@ exports.generate_cert = function (prefix, keepFiles, info, caKeyPath, caCertPath
  * caCertPath: the signer's certificate
  * cb: a callback of the form cb(err, keyBuf, certBuf)
  */
-exports.generate_cert_buf = function (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
-  exports.generate_cert(prefix, keepFiles, info, caKeyPath, caCertPath,
+ exports.generateCertBuf =
+function generateCertBuf (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
+  exports.generateCert(prefix, keepFiles, info, caKeyPath, caCertPath,
                         function (err, keyPath, certPath, fingerprint, hash){
     if (err) return cb(err);
     fs.readFile(certPath, function (err, certBuf) {
