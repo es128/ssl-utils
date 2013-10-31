@@ -10,7 +10,7 @@ function createExtensionsFile (opts, info, cb) {
     s = s + 'subjectAltName = ' + info.subjectaltname + '\n';
   }
   tmp.file(opts, function tmpFileCb(err, path) {
-    if (err) return cb(err);
+    if (err) { return cb(err); }
     fs.writeFile(path, s, function writeFileCb(err) {
       cb(err, path);
     });
@@ -28,7 +28,8 @@ function createExtensionsFile (opts, info, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the certificate request file, if successful.
  */
- exports.createCertRequestConfig =
+var      createCertRequestConfig =
+exports. createCertRequestConfig =
 function createCertRequestConfig (opts, info, cb) {
   var hash = info.subject;
   var s = '[ req ]\n' +
@@ -42,19 +43,20 @@ function createCertRequestConfig (opts, info, cb) {
   Object.keys(hash).forEach(function (key) {
     if (key in allowableKeys) {
       var val = hash[key];
-      if (Array.isArray(val))
+      if (Array.isArray(val)) {
         val = val[0]; // hack to handle OUs that are arrays of strings
+      }
       s = s + key + ' = ' + val + '\n';
     }
   });
 
   tmp.file(opts, function tmpFileCb (err, path) {
-    if (err) return cb(err);
+    if (err) { return cb(err); }
     fs.writeFile(path, s, function writeFileCb (err) {
       cb(err, path);
     });
   });
-}
+};
 
 /*
  * Create a keypair.
@@ -63,15 +65,16 @@ function createCertRequestConfig (opts, info, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the created file, if successful.
  */
- exports.createKeypair =
+var      createKeypair =
+exports. createKeypair =
 function createKeypair (opts, cb) {
   tmp.file(opts, function tmpFileCb (err, path) {
-    if (err) return cb(err);
+    if (err) { return cb(err); }
     child.exec('openssl genrsa -out ' + path + ' 2048', function execCb (err) {
       cb(err, path);
     });
   });
-}
+};
 
 /*
  * Create a certification request.
@@ -82,14 +85,15 @@ function createKeypair (opts, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the created file, if successful.
  */
- exports.createCertRequest =
+var      createCertRequest =
+exports. createCertRequest =
 function createCertRequest (opts, keyPath, cfgPath, cb) {
   tmp.file(opts, function tmpFileCb (err, path) {
-    if (err) return cb(err);
+    if (err) { return cb(err); }
     child.exec('openssl req -new -key ' + keyPath + ' -config ' + cfgPath + ' -out ' + path,
-               function execCb (err) {cb(err, path)});
+               function execCb (err) {cb(err, path);});
   });
-}
+};
 
 /*
  * Create a signed certificate from request file.
@@ -101,22 +105,24 @@ function createCertRequest (opts, keyPath, cfgPath, cb) {
  * cb: a callback of the form cb(err, path), where path is the path
  *     of the created file, if successful.
  */
- exports.createCert =
+var      createCert =
+exports. createCert =
 function createCert (opts, reqPath, caKeyPath, caCertPath, extPath, cb) {
   tmp.file(opts, function tmpFileCb(err, path) {
-    if (err) return cb(err);
+    if (err) { return cb(err); }
     child.exec('openssl x509 -req -in ' + reqPath + ' -CAkey ' + caKeyPath + ' -CA ' +
                 caCertPath + ' -out ' + path + ' -CAcreateserial' +
                 ' -extensions v3_ca -extfile ' + extPath,
                 function execCb(err) {
+      if (err) { return cb(err); }
       child.exec('openssl x509 -noout -in ' + path + ' -fingerprint -hash',
                   function statsCb(err, stdout) {
-        output = stdout.toString().split(/\n/);
+        var output = stdout.toString().split(/\n/);
         cb(err, path, output[0], output[1]);
       });
     });
   });
-}
+};
 
 /*
  * Generate a signed certificate from supplied information.
@@ -129,38 +135,40 @@ function createCert (opts, reqPath, caKeyPath, caCertPath, extPath, cb) {
  * caCertPath: the signer's certificate
  * cb: a callback of the form cb(err, keyPath, certPath)
  */
- exports.generateCert =
+var      generateCert =
+exports. generateCert =
 function generateCert (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
   var tmpFiles = [];
-  var opts = { prefix:prefix + '-', postfix:'.pem'}
+  var opts = { prefix:prefix + '-', postfix:'.pem'};
   createKeypair(opts, function (err, keyPath) {
-    if (err) return cb(err);
+    if (err) { return cb(err); }
     opts.postfix = '.cfg';
     createCertRequestConfig(opts, info, function (err, cfgPath) {
-      if (err) return cb(err);
+      if (err) { return cb(err); }
       tmpFiles.push(cfgPath);
       opts.postfix = '.ext';
       opts.prefix = prefix + '-';
       createExtensionsFile(opts, info, function (err, extPath) {
-        if (err) return cb(err);
+        if (err) { return cb(err); }
         tmpFiles.push(extPath);
         opts.postfix = '.pem';
         opts.prefix = prefix + '-csr-';
         createCertRequest(opts, keyPath, cfgPath, function (err, reqPath) {
-          if (err) return cb(err);
+          if (err) { return cb(err); }
           tmpFiles.push(reqPath);
           opts.prefix = prefix + '-cert-';
           createCert(opts, reqPath, caKeyPath, caCertPath, extPath,
                               function (err, certPath, fingerprint, hash) {
-            if (!keepFiles)
+            if (!keepFiles) {
               tmpFiles.forEach( function (path) { fs.unlink(path); } );
+            }
             cb(err, keyPath, certPath, fingerprint, hash);
           });
         });
       });
     });
   });
-}
+};
 
 /*
  * Same as generateCert, except that key and certificate contents are returned
@@ -175,13 +183,13 @@ function generateCert (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
  * caCertPath: the signer's certificate
  * cb: a callback of the form cb(err, keyBuf, certBuf)
  */
- exports.generateCertBuf =
+exports. generateCertBuf =
 function generateCertBuf (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
-  exports.generateCert(prefix, keepFiles, info, caKeyPath, caCertPath,
+  generateCert(prefix, keepFiles, info, caKeyPath, caCertPath,
                         function (err, keyPath, certPath, fingerprint, hash){
-    if (err) return cb(err);
+    if (err) { return cb(err); }
     fs.readFile(certPath, function (err, certBuf) {
-      if (err) return cb(err);
+      if (err) { return cb(err); }
       fs.readFile(keyPath, function (err, keyBuf) {
         if (!keepFiles) {
           fs.unlink(certPath);
@@ -191,5 +199,5 @@ function generateCertBuf (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
       });
     });
   });
-}
+};
 
