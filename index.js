@@ -1,3 +1,4 @@
+/* jshint node: true */
 'use strict';
 
 var fs    = require('fs');
@@ -32,15 +33,17 @@ var      createCertRequestConfig =
 exports. createCertRequestConfig =
 function createCertRequestConfig (opts, info, cb) {
 	var hash = info.subject;
-	var s = '[ req ]\n' +
-	        'default_bits       = 2048\n' +
-	        'default_keyfile    = keyfile.pem\n' +
-	        'distinguished_name = req_distinguished_name\n' +
-	        'prompt             = no\n\n' +
-	        '[ req_distinguished_name ]\n';
+	var s =
+		'[ req ]\n' +
+		'default_bits       = 2048\n' +
+		'default_keyfile    = keyfile.pem\n' +
+		'distinguished_name = req_distinguished_name\n' +
+		'prompt             = no\n\n' +
+		'[ req_distinguished_name ]\n'
+	;
 
 	var allowableKeys = { C:1, ST:1, L:1, O:1, OU:1, CN:1 };
-	Object.keys(hash).forEach(function (key) {
+	Object.keys(hash).forEach(function filterCertReqKeys (key) {
 		if (key in allowableKeys) {
 			var val = hash[key];
 			if (Array.isArray(val)) {
@@ -91,7 +94,10 @@ exports. createCertRequest =
 function createCertRequest (opts, keyPath, cfgPath, cb) {
 	tmp.file(opts, function tmpFileCb (err, path) {
 		if (err) { return cb(err); }
-		var cmd = 'openssl req -new -key ' + keyPath + ' -config ' + cfgPath + ' -out ' + path;
+		var cmd =
+			'openssl req -new -key ' + keyPath + ' -config ' + cfgPath +
+			' -out ' + path
+		;
 		child.exec(cmd, function execCb (err) {
 			cb(err, path);
 		});
@@ -113,13 +119,15 @@ exports. createCert =
 function createCert (opts, reqPath, caKeyPath, caCertPath, extPath, cb) {
 	tmp.file(opts, function tmpFileCb(err, path) {
 		if (err) { return cb(err); }
-		var cmd = 'openssl x509 -req -in ' + reqPath + ' -CAkey ' + caKeyPath +
+		var cmd =
+			'openssl x509 -req -in ' + reqPath + ' -CAkey ' + caKeyPath +
 			' -CA ' + caCertPath + ' -out ' + path + ' -CAcreateserial' +
-			' -extensions v3_ca -extfile ' + extPath;
-		child.exec(cmd, function execCb(err) {
+			' -extensions v3_ca -extfile ' + extPath
+		;
+		child.exec(cmd, function execCb (err) {
 			if (err) { return cb(err); }
 			var cmd2 = 'openssl x509 -noout -in ' + path + ' -fingerprint -hash';
-			child.exec(cmd2, function statsCb(err, stdout) {
+			child.exec(cmd2, function statsCb (err, stdout) {
 				var output = stdout.toString().split(/\n/);
 				cb(err, path, output[0], output[1]);
 			});
@@ -143,26 +151,26 @@ exports. generateCert =
 function generateCert (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
 	var tmpFiles = [];
 	var opts = { prefix:prefix + '-', postfix:'.pem'};
-	createKeypair(opts, function (err, keyPath) {
+	createKeypair(opts, function createKeypairCb (err, keyPath) {
 		if (err) { return cb(err); }
 		opts.postfix = '.cfg';
-		createCertRequestConfig(opts, info, function (err, cfgPath) {
+		createCertRequestConfig(opts, info, function requestConfigCb (err, cfgPath) {
 			if (err) { return cb(err); }
 			tmpFiles.push(cfgPath);
 			opts.postfix = '.ext';
 			opts.prefix = prefix + '-';
-			createExtensionsFile(opts, info, function (err, extPath) {
+			createExtensionsFile(opts, info, function extensionsFileCb (err, extPath) {
 				if (err) { return cb(err); }
 				tmpFiles.push(extPath);
 				opts.postfix = '.pem';
 				opts.prefix = prefix + '-csr-';
-				createCertRequest(opts, keyPath, cfgPath, function (err, reqPath) {
+				createCertRequest(opts, keyPath, cfgPath, function certRequestCb (err, reqPath) {
 					if (err) { return cb(err); }
 					tmpFiles.push(reqPath);
 					opts.prefix = prefix + '-cert-';
 					function createCertCb (err, certPath, fingerprint, hash) {
 						if (!keepFiles) {
-							tmpFiles.forEach( function (path) { fs.unlink(path); } );
+							tmpFiles.forEach( function deleteTmpFiles (path) { fs.unlink(path); } );
 						}
 						cb(err, keyPath, certPath, fingerprint, hash);
 					}
@@ -190,9 +198,9 @@ exports. generateCertBuf =
 function generateCertBuf (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
 	function generateCertCb (err, keyPath, certPath, fingerprint, hash){
 		if (err) { return cb(err); }
-		fs.readFile(certPath, function (err, certBuf) {
+		fs.readFile(certPath, function readCertCb (err, certBuf) {
 			if (err) { return cb(err); }
-			fs.readFile(keyPath, function (err, keyBuf) {
+			fs.readFile(keyPath, function readKeyCb (err, keyBuf) {
 				if (!keepFiles) {
 					fs.unlink(certPath);
 					fs.unlink(keyPath);
