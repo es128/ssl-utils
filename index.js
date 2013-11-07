@@ -1,17 +1,17 @@
 'use strict';
 
-var tmp = require('tmp');
-var fs = require('fs');
+var fs    = require('fs');
 var child = require('child_process');
+var tmp   = require('tmp');
 
 function createExtensionsFile (opts, info, cb) {
   var s = '[v3_ca]\n';
   if (info.subjectaltname) {
     s = s + 'subjectAltName = ' + info.subjectaltname + '\n';
   }
-  tmp.file(opts, function tmpFileCb(err, path) {
+  tmp.file(opts, function tmpFileCb (err, path) {
     if (err) { return cb(err); }
-    fs.writeFile(path, s, function writeFileCb(err) {
+    fs.writeFile(path, s, function writeFileCb (err) {
       cb(err, path);
     });
   });
