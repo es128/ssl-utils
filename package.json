@@ -14,7 +14,7 @@
   "bugs": {
     "url": "https://github.com/es128/ssl-utils/issues"
   },
-  "main": ".",
+  "main": "lib",
   "dependencies": {
     "tmp": "~0.0.21"
   }
