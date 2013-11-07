@@ -70,7 +70,8 @@ exports. createKeypair =
 function createKeypair (opts, cb) {
 	tmp.file(opts, function tmpFileCb (err, path) {
 		if (err) { return cb(err); }
-		child.exec('openssl genrsa -out ' + path + ' 2048', function execCb (err) {
+		var cmd = 'openssl genrsa -out ' + path + ' 2048';
+		child.exec(cmd, function execCb (err) {
 			cb(err, path);
 		});
 	});
@@ -90,9 +91,10 @@ exports. createCertRequest =
 function createCertRequest (opts, keyPath, cfgPath, cb) {
 	tmp.file(opts, function tmpFileCb (err, path) {
 		if (err) { return cb(err); }
-		child.exec('openssl req -new -key ' + keyPath + ' -config ' + cfgPath + ' -out ' + path,
-			function execCb (err) {cb(err, path);}
-		);
+		var cmd = 'openssl req -new -key ' + keyPath + ' -config ' + cfgPath + ' -out ' + path;
+		child.exec(cmd, function execCb (err) {
+			cb(err, path);
+		});
 	});
 };
 
@@ -111,13 +113,13 @@ exports. createCert =
 function createCert (opts, reqPath, caKeyPath, caCertPath, extPath, cb) {
 	tmp.file(opts, function tmpFileCb(err, path) {
 		if (err) { return cb(err); }
-		child.exec('openssl x509 -req -in ' + reqPath + ' -CAkey ' + caKeyPath + ' -CA ' +
-								caCertPath + ' -out ' + path + ' -CAcreateserial' +
-								' -extensions v3_ca -extfile ' + extPath,
-								function execCb(err) {
+		var cmd = 'openssl x509 -req -in ' + reqPath + ' -CAkey ' + caKeyPath +
+			' -CA ' + caCertPath + ' -out ' + path + ' -CAcreateserial' +
+			' -extensions v3_ca -extfile ' + extPath;
+		child.exec(cmd, function execCb(err) {
 			if (err) { return cb(err); }
-			child.exec('openssl x509 -noout -in ' + path + ' -fingerprint -hash',
-									function statsCb(err, stdout) {
+			var cmd2 = 'openssl x509 -noout -in ' + path + ' -fingerprint -hash';
+			child.exec(cmd2, function statsCb(err, stdout) {
 				var output = stdout.toString().split(/\n/);
 				cb(err, path, output[0], output[1]);
 			});
@@ -158,13 +160,13 @@ function generateCert (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
 					if (err) { return cb(err); }
 					tmpFiles.push(reqPath);
 					opts.prefix = prefix + '-cert-';
-					createCert(opts, reqPath, caKeyPath, caCertPath, extPath,
-															function (err, certPath, fingerprint, hash) {
+					function createCertCb (err, certPath, fingerprint, hash) {
 						if (!keepFiles) {
 							tmpFiles.forEach( function (path) { fs.unlink(path); } );
 						}
 						cb(err, keyPath, certPath, fingerprint, hash);
-					});
+					}
+					createCert(opts, reqPath, caKeyPath, caCertPath, extPath, createCertCb);
 				});
 			});
 		});
@@ -186,8 +188,7 @@ function generateCert (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
  */
 exports. generateCertBuf =
 function generateCertBuf (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
-	generateCert(prefix, keepFiles, info, caKeyPath, caCertPath,
-												function (err, keyPath, certPath, fingerprint, hash){
+	function generateCertCb (err, keyPath, certPath, fingerprint, hash){
 		if (err) { return cb(err); }
 		fs.readFile(certPath, function (err, certBuf) {
 			if (err) { return cb(err); }
@@ -199,6 +200,7 @@ function generateCertBuf (prefix, keepFiles, info, caKeyPath, caCertPath, cb) {
 				cb(err, keyBuf, certBuf, fingerprint, hash);
 			});
 		});
-	});
+	}
+	generateCert(prefix, keepFiles, info, caKeyPath, caCertPath, generateCertCb);
 };
 
