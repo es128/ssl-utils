@@ -7,6 +7,7 @@
     "url": "http://github.com/es128"
   },
   "homepage": "https://github.com/es128/ssl-utils",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:es128/ssl-utils.git"
