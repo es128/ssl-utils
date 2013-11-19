@@ -51,12 +51,10 @@ Generates a new ssl certificate and private key, signed by the provided certific
 * __prefix__: `String` prefix to use when naming temp files
 * __keepTmp__: `Boolean` whether temp files should be automatically deleted
 * __certInfo__: `Object` identity info to embed in the certificate
-  * _subject_: required child object with
-               `C` (Country), `ST` (State), `L` (Locality),
-               `O` (Organization), `OU` (Organizational Unit),
-               `CN` (Common Name)
+  * _subject_: required child object with `C` (Country), `ST` (State), `L` (Locality),
+    `O` (Organization), `OU` (Organizational Unit), `CN` (Common Name)
   * _subjectaltname_: optional string, comma-separated list of alt names for the certificate such
-                      as `DNS:foo.domain.name, DNS:bar.domain.name, DNS:localhost, IP:127.0.0.1`
+    as `DNS:foo.domain.name, DNS:bar.domain.name, DNS:localhost, IP:127.0.0.1`
 * __caKeyPath__:  `String` path to the certificate authority's private key pem file
 * __caCertPath__: `String` path to the certificate authority's certificate pem file
 * __callback__: `Function` in the form of `callback(err, keyBuffer, certBuffer)`
@@ -77,7 +75,7 @@ Parses a provided certificate's expiration date.
 
 * __cert__: `String|Buffer` contents of the certificate pem file
 * __callback__: `Function` in the form of `callback(err, certExpiry)` where certExpiry is a `Date`
-                instance.
+  instance.
 
 #### verifyCertificateKey(cert, key, [options], callback)
 Checks the validity of a provided certificate and private key, as well as whether they match.
@@ -85,11 +83,11 @@ Checks the validity of a provided certificate and private key, as well as whethe
 * __cert__: `String|Buffer` contents of the certificate
 * __key__:  `String|Buffer` contents of the private key
 * __options__: `Object` to verify the certificate against a specific certificate authority, pass
-               the path the CA file in `options.CAfile`
+  the path the CA file in `options.CAfile`
 * __callback__: `Function` in the form of `callback(err, result)` where `result` is an object
-                containing `certStatus`, `keyStatus`, and `match`
+  containing `certStatus`, `keyStatus`, and `match`
   * _result.certStatus_: `Object` containing `Boolean` properties  `valid`, `verifiedCA`, and
-                         `selfSigned` as well as `output` containing the raw output from OpenSSL
+    `selfSigned` as well as `output` containing the raw output from OpenSSL
   * _result.keyStatus_:  `Object` containing `valid` and `output`
   * _result.match_: `Boolean` whether the cert's and key's modulus values match
 
