@@ -91,7 +91,7 @@ Checks the validity of a provided certificate and private key, as well as whethe
   * _result.keyStatus_:  `Object` containing `valid` and `output`
   * _result.match_: `Boolean` whether the cert's and key's modulus values match
 
-##### _Additional certificate generation methods_
+##### _Additional certificate verification methods_
 `verifyCertificate`, `verifyKey`, `compareModuli` are used by `verifyCertificateKey`, but are also
 exported and can be used directly. Check the
 [`verify.js`](https://github.com/es128/ssl-utils/blob/master/lib/verify.js) source code for
