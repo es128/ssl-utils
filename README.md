@@ -63,6 +63,10 @@ Generates a new ssl certificate and private key, signed by the provided certific
 Same as `generateCertBuffer` except it returns file paths to the temp files for the key and cert
 instead of buffers.
 
+#### setExpiryDays(days)
+Sets how many days from now a generated certificate should expire. If not set, openssl's default
+or local settings will be used.
+
 ##### _Additional certificate generation methods_
 `createKeypair`, `createCertRequestConfig`, `createExtensionsFile`, `createCertRequest`, and
 `createCert` are used by the above methods in the generation process, but are also exported and
