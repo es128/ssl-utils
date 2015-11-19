@@ -86,8 +86,9 @@ Checks the validity of a provided certificate and private key, as well as whethe
 
 * __cert__: `String|Buffer` contents of the certificate
 * __key__:  `String|Buffer` contents of the private key
-* __options__: `Object` to verify the certificate against a specific certificate authority, pass
-  the path the CA file in `options.CAfile`
+* __options__: `Object`
+  * to verify the certificate against a specific certificate authority, pass the path the CA file in `options.CAfile`
+  * to use Key password, pass the password in `options.pass`
 * __callback__: `Function` in the form of `callback(err, result)` where `result` is an object
   containing `certStatus`, `keyStatus`, and `match`
   * _result.certStatus_: `Object` containing `Boolean` properties  `valid`, `verifiedCA`, and
