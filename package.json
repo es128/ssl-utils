@@ -1,6 +1,6 @@
 {
   "name": "ssl-utils",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Node.js utility for SSL certificates using OpenSSL (generating, verifying, etc.)",
   "author": {
     "name": "Elan Shanker",
@@ -16,6 +16,9 @@
     "url": "https://github.com/es128/ssl-utils/issues"
   },
   "main": "lib",
+  "engines": {
+    "node": ">= 4.0.0"
+  },  
   "dependencies": {
     "tmp": "~0.0.21"
   }
